@@ -31,24 +31,71 @@ async function loadMenu() {
     }
 }
 
+// function displayMenu() {
+//     const container = document.getElementById('menu-container');
+//     const categories = [...new Set(menu.map(item => item.category))];
+    
+//     let html = '';
+    
+//     categories.forEach(category => {
+//         html += `<div class="col-12 mt-3"><h5 class="text-muted">${category}</h5></div>`;
+        
+//         const items = menu.filter(item => item.category === category);
+//         items.forEach(item => {
+//             html += `
+//                 <div class="col-md-6 col-lg-4">
+//                     <div class="menu-item" onclick="addToCart(${item.id})">
+//                         <h5>${item.name}</h5>
+//                         <div class="price">$${item.price.toFixed(2)}</div>
+//                         <div class="description">${item.description || ''}</div>
+//                         <span class="category">${item.category}</span>
+//                     </div>
+//                 </div>
+//             `;
+//         });
+//     });
+    
+//     container.innerHTML = html;
+// }
+// waiter.js - 替換原有的 displayMenu() 函式，只保留分組顯示，移除篩選
+
 function displayMenu() {
     const container = document.getElementById('menu-container');
+    container.innerHTML = ''; // 清空容器內容
+    
+    // 1. 確保菜單不為空
+    if (menu.length === 0) {
+        container.innerHTML = '<div class="col-12 text-center p-5 text-muted">目前菜單是空的。請前往 /admin 頁面新增菜單。</div>';
+        return;
+    }
+
+    // 2. 獲取所有不重複的菜單類別
     const categories = [...new Set(menu.map(item => item.category))];
     
     let html = '';
     
+    // 3. 遍歷類別，生成標題和項目
     categories.forEach(category => {
-        html += `<div class="col-12 mt-3"><h5 class="text-muted">${category}</h5></div>`;
+        // A. 類別標題
+        html += `<div class="col-12 mt-4 mb-2"><h4 class="text-primary">${category}</h4><hr></div>`;
         
+        // B. 過濾出該類別下的所有項目
         const items = menu.filter(item => item.category === category);
+        
+        // C. 遍歷項目，生成菜單卡片
         items.forEach(item => {
+            // 使用 Bootstrap 卡片結構，與 waiter.html 保持一致
             html += `
-                <div class="col-md-6 col-lg-4">
-                    <div class="menu-item" onclick="addToCart(${item.id})">
-                        <h5>${item.name}</h5>
-                        <div class="price">$${item.price.toFixed(2)}</div>
-                        <div class="description">${item.description || ''}</div>
-                        <span class="category">${item.category}</span>
+                <div class="col-sm-6 col-md-4 col-lg-4"> 
+                    <div class="card h-100 shadow-sm menu-item" style="cursor: pointer;" onclick="addToCart(${item.id})">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title text-primary">${item.name}</h5>
+                            <p class="card-text text-muted small">${item.description || '無介紹'}</p> 
+                            <div class="mt-auto d-flex justify-content-between align-items-center pt-2">
+                                <span class="badge bg-secondary">${item.category}</span>
+                                <span class="fs-5 fw-bold text-success">NT$${item.price.toFixed(2)}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
@@ -57,7 +104,7 @@ function displayMenu() {
     
     container.innerHTML = html;
 }
-
+////
 function addToCart(itemId) {
     const menuItem = menu.find(item => item.id === itemId);
     if (!menuItem) return;
