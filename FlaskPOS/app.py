@@ -6,6 +6,11 @@ import json
 from datetime import datetime
 import os
 from database import init_db, get_db
+##########
+# app.py 頂部修改（確保 redirect 和 url_for 在這裡）
+from flask import Flask, render_template, request, jsonify, redirect, url_for
+# ... 其他導入
+##########
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get("SESSION_SECRET", "your-secret-key-here")
@@ -186,6 +191,85 @@ def update_order_status(order_id):
         return jsonify(order_data)
 
     return jsonify({"error": "Order not found"}), 404
+##################
+# --- 菜單管理路由 ---
+@app.route("/admin", methods=["GET", "POST"])
+def admin_menu():
+    conn = get_db()
+    
+    if request.method == "POST":
+        action = request.form.get("action")
+        
+        if action == "add_or_update":
+            # 從表單獲取數據
+            category = request.form["category"]
+            name = request.form["name"]
+            price = float(request.form["price"])
+            description = request.form["description"]
+            item_id = request.form.get("item_id")
+            
+            # 處理可用性（預設為 1，即可用）
+            available = 1 
+            
+            if item_id:
+                # 修改現有項目
+                conn.execute(
+                    "UPDATE menu_items SET category=?, name=?, price=?, description=?, available=? WHERE id=?",
+                    (category, name, price, description, available, item_id)
+                )
+            else:
+                # 新增項目
+                conn.execute(
+                    "INSERT INTO menu_items (category, name, price, description, available) VALUES (?, ?, ?, ?, ?)",
+                    (category, name, price, description, available)
+                )
+            
+        elif action == "delete":
+            # 刪除項目
+            item_id = request.form["item_id"]
+            conn.execute("DELETE FROM menu_items WHERE id=?", (item_id,))
+
+        conn.commit()
+        conn.close()
+        
+        # 處理完畢後，重導向回管理頁面
+        return redirect(url_for("admin_menu"))
+    
+    # GET 請求：顯示所有菜單
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, category, name, price, description, available FROM menu_items ORDER BY category, id")
+    menu_items = cursor.fetchall()
+    conn.close()
+    
+    return render_template("admin.html", menu_items=menu_items)
+
+# --- 修正 API 路由，以包含新的 category 和 description ---
+@app.route("/api/menu", methods=["GET"])
+def get_menu():
+    conn = get_db()
+    cursor = conn.cursor()
+    # 確保這裡的欄位順序和 SELECT 語句一致
+    cursor.execute(
+        "SELECT id, name, price, description, category FROM menu_items WHERE available = 1 ORDER BY category, name"
+    )
+    items = cursor.fetchall()
+    conn.close()
+
+    menu = []
+    for item in items:
+        # 使用 dict 語法來匹配您的資料庫行
+        menu.append(
+            {
+                "id": item["id"],
+                "name": item["name"],
+                "price": item["price"],
+                "description": item["description"],
+                "category": item["category"],
+            }
+        )
+    return jsonify(menu)
+#############
+
 
 
 @socketio.on("connect")
