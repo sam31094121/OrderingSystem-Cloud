@@ -35,29 +35,29 @@ def kitchen():
     return render_template("kitchen.html")
 
 
-@app.route("/api/menu", methods=["GET"])
-def get_menu():
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute(
-        "SELECT * FROM menu_items WHERE available = 1 ORDER BY category, name"
-    )
-    items = cursor.fetchall()
-    conn.close()
+# @app.route("/api/menu", methods=["GET"])
+# def get_menu():
+#     conn = get_db()
+#     cursor = conn.cursor()
+#     cursor.execute(
+#         "SELECT * FROM menu_items WHERE available = 1 ORDER BY category, name"
+#     )
+#     items = cursor.fetchall()
+#     conn.close()
 
-    menu = []
-    for item in items:
-        menu.append(
-            {
-                "id": item["id"],
-                "name": item["name"],
-                "price": item["price"],
-                "description": item["description"],
-                "category": item["category"],
-            }
-        )
+#     menu = []
+#     for item in items:
+#         menu.append(
+#             {
+#                 "id": item["id"],
+#                 "name": item["name"],
+#                 "price": item["price"],
+#                 "description": item["description"],
+#                 "category": item["category"],
+#             }
+#         )
 
-    return jsonify(menu)
+#     return jsonify(menu)
 
 
 @app.route("/api/orders", methods=["GET"])
@@ -191,6 +191,7 @@ def update_order_status(order_id):
         return jsonify(order_data)
 
     return jsonify({"error": "Order not found"}), 404
+    
 ##################
 # --- 菜單管理路由 ---
 @app.route("/admin", methods=["GET", "POST"])
