@@ -23,6 +23,10 @@ socket.on('order_updated', (order) => {
     }
 });
 
+socket.on('menu_updated', () => {
+    loadOrders();
+});
+
 async function loadOrders() {
     try {
         const response = await fetch('/api/orders/pending');
