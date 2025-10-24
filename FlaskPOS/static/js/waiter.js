@@ -20,6 +20,10 @@ socket.on('order_updated', (order) => {
     showNotification(`訂單 ${order.order_number} 狀態：${statusText}`, 'info');
 });
 
+socket.on('menu_updated', () => {
+    loadMenu();
+});
+
 async function loadMenu() {
     try {
         const response = await fetch('/api/menu');
@@ -30,34 +34,6 @@ async function loadMenu() {
         showNotification('載入菜單時發生錯誤', 'danger');
     }
 }
-
-// function displayMenu() {
-//     const container = document.getElementById('menu-container');
-//     const categories = [...new Set(menu.map(item => item.category))];
-    
-//     let html = '';
-    
-//     categories.forEach(category => {
-//         html += `<div class="col-12 mt-3"><h5 class="text-muted">${category}</h5></div>`;
-        
-//         const items = menu.filter(item => item.category === category);
-//         items.forEach(item => {
-//             html += `
-//                 <div class="col-md-6 col-lg-4">
-//                     <div class="menu-item" onclick="addToCart(${item.id})">
-//                         <h5>${item.name}</h5>
-//                         <div class="price">$${item.price.toFixed(2)}</div>
-//                         <div class="description">${item.description || ''}</div>
-//                         <span class="category">${item.category}</span>
-//                     </div>
-//                 </div>
-//             `;
-//         });
-//     });
-    
-//     container.innerHTML = html;
-// }
-// waiter.js - 替換原有的 displayMenu() 函式，只保留分組顯示，移除篩選
 
 function displayMenu() {
     const container = document.getElementById('menu-container');
@@ -104,7 +80,7 @@ function displayMenu() {
     
     container.innerHTML = html;
 }
-////
+
 function addToCart(itemId) {
     const menuItem = menu.find(item => item.id === itemId);
     if (!menuItem) return;
